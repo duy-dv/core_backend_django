@@ -1,0 +1,9 @@
+# Các thư viện cần để chạy bộ khung trên máy cá nhân.
+Django==5.2.17
+djangorestframework==3.16.1
+djangorestframework-simplejwt==5.5.1
+django-cors-headers==4.9.0
+django-filter==25.2
+drf-spectacular==0.29.0
+python-dotenv==1.2.3
+argon2-cffi==25.1.0

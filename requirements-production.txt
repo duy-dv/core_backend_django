@@ -1,0 +1,4 @@
+# Chỉ cài khi dùng PostgreSQL hoặc triển khai bằng Docker/server.
+-r requirements.txt
+psycopg[binary]==3.3.6
+uvicorn==0.54.0

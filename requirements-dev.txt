@@ -1,0 +1,4 @@
+# Chỉ cần cài khi phát triển và chạy kiểm thử.
+-r requirements.txt
+ruff==0.16.9
+coverage==7.16.2

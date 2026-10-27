@@ -1,0 +1,57 @@
+# Tự động kiểm tra khi đưa code lên GitHub; không cần để chạy local.
+name: Kiem tra code
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  sqlite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install -r requirements-dev.txt
+      - run: python -m pip check
+      - run: python -m ruff check src
+      - run: python -m ruff format --check src
+      - run: python src/manage.py check
+      - run: python src/manage.py makemigrations --check --dry-run
+      - run: python src/manage.py migrate --noinput
+      - run: python -m coverage run src/manage.py test apps --settings=core.test_settings
+      - run: python -m coverage report --fail-under=85
+      - run: python src/manage.py spectacular --validate --fail-on-warn --file schema.yml
+
+  postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: django_base
+          POSTGRES_USER: django
+          POSTGRES_PASSWORD: ci-only
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U django -d django_base"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      POSTGRES_DB: django_base
+      POSTGRES_USER: django
+      POSTGRES_PASSWORD: ci-only
+      POSTGRES_HOST: localhost
+      TEST_POSTGRES: "True"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install -r requirements-production.txt -r requirements-dev.txt
+      - run: python src/manage.py migrate --noinput
+      - run: python src/manage.py test apps --settings=core.test_settings
